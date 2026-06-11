@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Non-Functional Field Guide — for Product Managers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F5F2;
+    --surface:#FFFFFF;
+    --surface-2:#FAFAF8;
+    --ink:#15181C;
+    --ink-2:#565E68;
+    --ink-3:#8A929C;
+    --line:#E3E4DF;
+    --line-2:#ECEDE8;
+    --accent:#1E46C8;
+    --accent-soft:#E9EDFB;
+    --ok:#2F8F5B;
+    --warn:#C8881A;
+    --crit:#C5483C;
+    --ok-soft:#E6F2EB;
+    --warn-soft:#FBF1DD;
+    --crit-soft:#F8E8E6;
+    --shadow:0 1px 2px rgba(20,24,28,.04), 0 8px 28px rgba(20,24,28,.06);
+    --r:14px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 28px;}
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    position:relative;overflow:hidden;
+    background:
+      radial-gradient(120% 90% at 88% -10%, rgba(30,70,200,.07), transparent 60%),
+      linear-gradient(180deg,#FFFFFF, var(--paper));
+    border-bottom:1px solid var(--line);
+  }
+  .hero-inner{padding:62px 0 56px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--accent);font-weight:500;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--accent);display:inline-block;}
+  h1{
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+    font-size:clamp(34px,5.4vw,62px);line-height:1.02;letter-spacing:-.02em;
+    margin:20px 0 0;max-width:16ch;
+  }
+  h1 .q{color:var(--accent);}
+  .lede{
+    font-size:clamp(16px,1.7vw,19px);color:var(--ink-2);max-width:60ch;
+    margin:22px 0 0;line-height:1.6;
+  }
+  .lede b{color:var(--ink);font-weight:600;}
+
+  /* threshold motif */
+  .gauge-strip{
+    margin-top:38px;display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;
+  }
+  .gauge{
+    background:var(--surface);border:1px solid var(--line);border-radius:11px;
+    padding:13px 16px;min-width:150px;flex:1 1 160px;box-shadow:var(--shadow);
+  }
+  .gauge .k{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-3);}
+  .gauge .v{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:23px;margin-top:3px;}
+  .gauge .bar{height:5px;border-radius:3px;background:var(--line-2);margin-top:9px;overflow:hidden;}
+  .gauge .bar i{display:block;height:100%;border-radius:3px;}
+
+  /* ---------- TOOLBAR ---------- */
+  .toolbar{
+    position:sticky;top:0;z-index:40;background:rgba(244,245,242,.86);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  }
+  .toolbar-inner{display:flex;gap:14px;align-items:center;padding:14px 0;flex-wrap:wrap;}
+  .search{
+    position:relative;flex:1 1 260px;min-width:220px;
+  }
+  .search input{
+    width:100%;padding:11px 14px 11px 40px;border:1px solid var(--line);
+    border-radius:10px;background:var(--surface);font-family:'Inter',sans-serif;
+    font-size:14.5px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;
+  }
+  .search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-3);}
+  .filters{display:flex;gap:7px;flex-wrap:wrap;}
+  .pill{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.04em;
+    padding:8px 13px;border-radius:999px;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink-2);cursor:pointer;white-space:nowrap;
+    transition:all .14s;text-transform:uppercase;
+  }
+  .pill:hover{border-color:var(--ink-3);color:var(--ink);}
+  .pill[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-3);white-space:nowrap;}
+
+  /* ---------- EXPLORER ---------- */
+  .explorer{display:grid;grid-template-columns:340px 1fr;gap:30px;padding:34px 0 80px;align-items:start;}
+  .rail{position:sticky;top:78px;max-height:calc(100vh - 100px);overflow-y:auto;padding-right:4px;}
+  .cat-group{margin-bottom:22px;}
+  .cat-head{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-3);font-weight:600;
+    padding:0 0 8px;display:flex;align-items:center;gap:8px;
+  }
+  .cat-head .dot{width:8px;height:8px;border-radius:2px;flex:0 0 auto;}
+  .nav-item{
+    display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+    padding:9px 11px;border:none;background:transparent;border-radius:9px;
+    cursor:pointer;color:var(--ink-2);font-family:'Inter',sans-serif;font-size:14.5px;
+    transition:background .12s,color .12s;line-height:1.3;
+  }
+  .nav-item:hover{background:var(--surface-2);color:var(--ink);}
+  .nav-item.active{background:var(--ink);color:#fff;}
+  .nav-item .idx{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-3);flex:0 0 auto;}
+  .nav-item.active .idx{color:rgba(255,255,255,.6);}
+  .nav-item .core{
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;
+    background:var(--accent-soft);color:var(--accent);padding:2px 5px;border-radius:4px;
+    margin-left:auto;flex:0 0 auto;
+  }
+  .nav-item.active .core{background:rgba(255,255,255,.2);color:#fff;}
+
+  /* detail panel */
+  .panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+    box-shadow:var(--shadow);overflow:hidden;min-height:480px;
+  }
+  .panel-top{padding:30px 34px 24px;border-bottom:1px solid var(--line-2);position:relative;}
+  .panel-cat{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.1em;
+    text-transform:uppercase;font-weight:600;display:inline-flex;align-items:center;gap:8px;
+  }
+  .panel-cat .dot{width:9px;height:9px;border-radius:2px;}
+  .panel h2{
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:30px;
+    letter-spacing:-.015em;margin:12px 0 0;line-height:1.08;
+  }
+  .panel .oneliner{font-size:17px;color:var(--ink-2);margin:11px 0 0;max-width:62ch;line-height:1.55;}
+  .core-badge{
+    position:absolute;top:30px;right:34px;font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    background:var(--accent-soft);color:var(--accent);padding:5px 10px;border-radius:6px;font-weight:600;
+  }
+  .panel-body{padding:8px 34px 34px;}
+  .block{padding:22px 0;border-bottom:1px solid var(--line-2);}
+  .block:last-child{border-bottom:none;}
+  .block-label{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-3);font-weight:600;
+    display:flex;align-items:center;gap:9px;margin-bottom:11px;
+  }
+  .block-label .gi{width:18px;height:18px;flex:0 0 auto;}
+  .block p{margin:0;font-size:15.5px;line-height:1.62;color:var(--ink);}
+  .block.why .block-label{color:var(--crit);}
+  .block.good .block-label{color:var(--ok);}
+  .ask-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;}
+  .ask-list li{
+    display:flex;gap:11px;align-items:flex-start;font-size:15.5px;line-height:1.55;
+    background:var(--surface-2);border:1px solid var(--line-2);border-radius:9px;padding:11px 13px;
+  }
+  .ask-list li::before{
+    content:"?";font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--accent);
+    background:var(--accent-soft);border-radius:5px;width:21px;height:21px;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:1px;
+  }
+  .prd-box{
+    background:#11151B;color:#E7EAEE;border-radius:11px;padding:16px 18px;
+    font-family:'IBM Plex Mono',monospace;font-size:13.5px;line-height:1.65;
+    position:relative;overflow:hidden;
+  }
+  .prd-box .tag{color:#7FA8FF;}
+  .prd-box .req{color:#8FD4A6;}
+  .tradeoff{
+    background:var(--warn-soft);border:1px solid #F0DCB0;border-radius:11px;padding:14px 16px;
+    font-size:15px;line-height:1.6;color:#5C4711;
+  }
+  .tradeoff b{color:#3F2F08;}
+
+  /* checklist */
+  .checklist-sec{background:var(--surface);border-top:1px solid var(--line);}
+  .check-inner{padding:62px 0;}
+  .check-head{max-width:62ch;}
+  .check-head h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(26px,3.4vw,38px);
+    letter-spacing:-.015em;margin:14px 0 0;line-height:1.05;}
+  .check-head p{color:var(--ink-2);font-size:17px;margin:14px 0 0;}
+  .progress{
+    margin:26px 0 30px;display:flex;align-items:center;gap:14px;
+  }
+  .progress .track{flex:1;height:9px;background:var(--line-2);border-radius:5px;overflow:hidden;max-width:420px;}
+  .progress .track i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s ease;border-radius:5px;}
+  .progress .pct{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;}
+  .check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:13px;}
+  .check-item{
+    display:flex;gap:13px;align-items:flex-start;background:var(--surface-2);
+    border:1px solid var(--line-2);border-radius:11px;padding:15px 16px;cursor:pointer;
+    transition:border-color .14s,background .14s;
+  }
+  .check-item:hover{border-color:var(--ink-3);}
+  .check-item.done{background:var(--ok-soft);border-color:#BFE0CC;}
+  .box{
+    width:21px;height:21px;border:1.8px solid var(--ink-3);border-radius:6px;flex:0 0 auto;margin-top:1px;
+    display:flex;align-items:center;justify-content:center;transition:all .14s;
+  }
+  .check-item.done .box{background:var(--ok);border-color:var(--ok);}
+  .box svg{opacity:0;transition:opacity .14s;}
+  .check-item.done .box svg{opacity:1;}
+  .check-item .ct{font-size:14.5px;line-height:1.5;}
+  .check-item .ct b{display:block;font-weight:600;margin-bottom:2px;}
+  .check-item .ct span{color:var(--ink-2);font-size:13.5px;}
+
+  /* footer */
+  footer{padding:40px 0 56px;border-top:1px solid var(--line);color:var(--ink-3);font-size:13.5px;}
+  footer .mono{color:var(--ink-2);}
+
+  .empty{padding:60px 34px;text-align:center;color:var(--ink-3);}
+  .empty .mono{font-size:13px;}
+
+  @media (max-width:920px){
+    .explorer{grid-template-columns:1fr;gap:0;}
+    .rail{position:static;max-height:none;overflow:visible;
+      border:1px solid var(--line);border-radius:var(--r);background:var(--surface);
+      padding:16px;margin-bottom:18px;box-shadow:var(--shadow);}
+    .panel{min-height:0;}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 18px;}
+    .panel-top,.panel-body{padding-left:20px;padding-right:20px;}
+    .core-badge{position:static;display:inline-block;margin-top:12px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;scroll-behavior:auto!important;}
+  }
+  :focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow">Field Guide · Non-Functional Requirements</div>
+    <h1>The features ship the demo. The <span class="q">non-functional</span> requirements decide if it survives Monday.</h1>
+    <p class="lede">A working feature answers <b>"what does it do?"</b> Everything that decides whether it holds up in production — speed, reliability, safety, the cost of changing it later — answers <b>"how well, under real conditions?"</b> This guide turns those invisible qualities into questions you can ask, language you can put in a PRD, and tradeoffs you can reason about.</p>
+    <div class="gauge-strip" id="gaugeStrip"></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap toolbar-inner">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="text" placeholder="Search requirements, e.g. latency, rollout, on-call…" aria-label="Search requirements">
+    </div>
+    <div class="filters" id="filters"></div>
+    <span class="count" id="count"></span>
+  </div>
+</div>
+
+<main class="wrap explorer">
+  <nav class="rail" id="rail" aria-label="Requirements list"></nav>
+  <section class="panel" id="panel" aria-live="polite"></section>
+</main>
+
+<section class="checklist-sec">
+  <div class="wrap check-inner">
+    <div class="check-head">
+      <div class="eyebrow">Before the spec is "done"</div>
+      <h3>The non-functional readiness checklist</h3>
+      <p>Run any PRD through this before kickoff. If a line doesn't apply, say so explicitly — "no NFR here" is a decision, and writing it down stops it from becoming a surprise in week three.</p>
+    </div>
+    <div class="progress">
+      <div class="track"><i id="progressBar"></i></div>
+      <span class="pct mono" id="progressPct">0 / 0 addressed</span>
+    </div>
+    <div class="check-grid" id="checkGrid"></div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <span class="mono">NON-FUNCTIONAL FIELD GUIDE</span> — a reference for product managers. The six topics you named (latency, observability, rollouts, alerts, test coverage, simplicity) are marked <span class="mono">CORE</span>. Everything else rounds out the picture.
+</footer>
+
+<script>
+const CATS = {
+  reliability:  {label:"Reliability & Resilience", color:"#2F8F5B"},
+  performance:  {label:"Performance & Scale",       color:"#1E46C8"},
+  ops:          {label:"Observability & Operations",color:"#7A4FD0"},
+  quality:      {label:"Quality & Maintainability",  color:"#C8881A"},
+  security:     {label:"Security & Compliance",      color:"#C5483C"},
+  data:         {label:"Data",                       color:"#1796A8"},
+  experience:   {label:"Experience Qualities",       color:"#D2658F"},
+  cost:         {label:"Cost & Efficiency",          color:"#6B7280"},
+};
+
+const TOPICS = [
+  // ---------- RELIABILITY ----------
+  {cat:"reliability", title:"Availability & SLOs", one:"How often the system is up and working from the user's point of view — and the target you commit to.",
+   why:"Availability is the foundation users feel first. Without an explicit target you can't say whether an outage was acceptable or a crisis, and teams over- or under-invest by guessing. \u201CAlways up\u201D is not a target; it's a wish that justifies infinite spend.",
+   good:"A stated SLO (e.g. 99.9% successful requests over 30 days), measured from the user's side, with an error budget that the team is allowed to spend on risk. \u201CFour nines\u201D \u2248 52 min/year of downtime; \u201Cthree nines\u201D \u2248 8.7 hours.",
+   ask:["What availability target are we committing to, and who depends on it?","Is the SLO measured from the user's perspective or just server-side?","How much downtime does that target actually allow per month?","What happens when we burn through the error budget?"],
+   prd:["<span class='tag'>NFR · Availability</span>","Target: <span class='req'>99.9%</span> of checkout requests succeed, measured","at the client, rolling 30-day window.","Error budget breach pauses new feature rollout."],
+   trade:"Every extra nine costs disproportionately more in redundancy and engineering time. <b>The honest question is not \u201Chow much uptime do we want\u201D but \u201Chow much downtime can this specific flow tolerate before it hurts the business.\u201D</b>"},
+
+  {cat:"reliability", title:"Fault Tolerance & Graceful Degradation", one:"What the product does when a dependency fails — break loudly, or bend and keep serving a useful subset.",
+   why:"In any real system, something downstream will be slow or down. If the design assumes everything always works, one flaky dependency takes the whole experience with it. Degradation decisions are product decisions, not just engineering ones.",
+   good:"Clear, intentional fallbacks: a recommendations service that's down shows popular items instead of an error; a payment retry queues rather than dropping. Failures are contained to the smallest possible blast radius.",
+   ask:["If dependency X is down, what should the user see instead of an error?","Which parts of this flow are essential vs. nice-to-have when things degrade?","Can one slow dependency take down the whole page, or is it isolated?","What's the worst-case blast radius if this fails?"],
+   prd:["<span class='tag'>NFR · Degradation</span>","If recommendations API fails, render <span class='req'>top-sellers</span>","fallback; never block the page.","Timeouts: 800ms, then fall back silently."],
+   trade:"Graceful degradation is more code paths to build and test. <b>Spend it where a failure is both likely and user-visible</b>; not every dependency deserves a hand-crafted fallback."},
+
+  {cat:"reliability", title:"Disaster Recovery & Backups", one:"How fast you can come back, and how much data you can afford to lose, after something goes seriously wrong.",
+   why:"Backups that have never been restored are a guess, not a safety net. Without explicit recovery targets, \u201Cwe have backups\u201D can still mean a day of lost data and a multi-hour scramble that no one rehearsed.",
+   good:"Defined RTO (how fast you recover) and RPO (how much data loss is acceptable), with restores actually tested on a schedule. The team has run the recovery, not just written it down.",
+   ask:["If the database is lost, how much data can we afford to lose (RPO)?","How long can recovery take before it's unacceptable (RTO)?","When did we last test restoring from backup — not just taking one?","Which data is genuinely irreplaceable vs. regenerable?"],
+   prd:["<span class='tag'>NFR · Recovery</span>","RPO: <span class='req'>\u2264 5 min</span> data loss · RTO: <span class='req'>\u2264 1 hr</span>","for donor records. Restore drill required","before launch sign-off."],
+   trade:"Tighter recovery targets mean more frequent replication and standby infrastructure, which costs money continuously to insure against a rare event. <b>Match the target to the true cost of losing that specific data.</b>"},
+
+  // ---------- PERFORMANCE ----------
+  {cat:"performance", core:true, title:"Latency", one:"How long the user waits between an action and a useful response — felt, not averaged.",
+   why:"Latency is experienced one request at a time, so averages lie. A 200ms average can hide a slow tail where 1 in 20 users waits three seconds. People abandon slow flows, and the slow tail is usually where your most engaged or worst-connected users live.",
+   good:"Targets stated as percentiles (p50, p95, p99) for specific user actions, measured end-to-end including network. e.g. \u201Csearch results render in under 400ms at p95.\u201D The budget is owned, not aspirational.",
+   ask:["What's the latency target for this action, and at which percentile?","Are we measuring at the server or end-to-end from the user's device?","What does the p99 (slowest) experience look like, not just the average?","Which step in the chain dominates the time?"],
+   prd:["<span class='tag'>NFR · Latency</span>","Search results visible in <span class='req'>&lt; 400ms p95</span>,","<span class='req'>&lt; 1s p99</span>, measured end-to-end on 4G.","Regression budget: +50ms triggers review."],
+   trade:"Driving down the tail (p99) is far harder than the average and often means caching, precomputation, or architectural change. <b>Decide which actions deserve that investment</b> — a checkout button, yes; an admin export, probably not."},
+
+  {cat:"performance", title:"Throughput", one:"How much work the system can handle per unit of time — requests, transactions, or events per second.",
+   why:"A system can be fast for one user and fall over under a thousand. Throughput is what a marketing spike, a viral moment, or a fundraising surge actually tests. Confusing \u201Cfast\u201D with \u201Chandles load\u201D is a common and expensive mistake.",
+   good:"A known, tested ceiling: \u201Cwe sustain 5,000 donations/min before latency degrades.\u201D Capacity is verified under realistic load, not extrapolated from a single-user benchmark.",
+   ask:["What's the peak load we expect — and what's the worst plausible spike?","At what point does throughput start hurting latency?","Have we load-tested this, or is the number theoretical?","What's our headroom above expected peak?"],
+   prd:["<span class='tag'>NFR · Throughput</span>","Sustain <span class='req'>5,000 req/s</span> at target latency.","Validated via load test at <span class='req'>1.5\u00D7</span> projected peak","before campaign launch."],
+   trade:"Building for a peak you rarely hit means paying for idle capacity. Autoscaling helps but isn't instant. <b>The tension is between a smooth spike and a lean steady state</b> — name the spike you're actually designing for."},
+
+  {cat:"performance", title:"Scalability", one:"Whether the system keeps performing as load, data, or users grow — and how gracefully it does so.",
+   why:"Something that works at today's scale can hit a wall at 10\u00D7 in ways that aren't obvious until you're there. Scalability problems often surface at the worst time — during the growth you wanted. Designing for it later usually means a rewrite.",
+   good:"Headroom is understood and the path to more is known: \u201Cwe scale horizontally by adding instances\u201D vs. \u201Cwe're limited by a single database we'd have to re-architect.\u201D Bottlenecks are identified before they bite.",
+   ask:["What breaks first if usage grows 10\u00D7?","Can we scale by adding machines, or is there a hard single bottleneck?","Is there a known ceiling we'll hit, and roughly when?","Does cost scale linearly with usage, or worse?"],
+   prd:["<span class='tag'>NFR · Scalability</span>","Architecture supports <span class='req'>10\u00D7</span> current peak by","horizontal scaling, no schema change. Document","the next known bottleneck above that."],
+   trade:"Designing for scale you don't yet need adds complexity now for a maybe-later payoff. <b>Right-size to a realistic growth horizon</b> — but know where the cliff is so you're not surprised by it."},
+
+  {cat:"performance", title:"Load & Capacity Planning", one:"Knowing in advance whether you can handle a known upcoming event, and provisioning for it.",
+   why:"Predictable spikes — a campaign launch, a press hit, year-end giving — are the easiest outages to prevent and the most embarrassing to suffer. The work is to test before, not diagnose during.",
+   good:"Load tests run at a multiple of projected peak ahead of the event, a provisioning plan in place, and a rollback or shed-load plan if reality exceeds the model.",
+   ask:["What's the largest event coming, and what load does it imply?","Have we tested at that load plus a safety margin?","What's the plan if we exceed even our high estimate?","Who's watching the dashboards during the event?"],
+   prd:["<span class='tag'>NFR · Capacity</span>","Load test at <span class='req'>2\u00D7</span> forecast peak \u2265 2 weeks pre-launch.","Provision standby capacity; define load-shedding","order if exceeded."],
+   trade:"Over-provisioning for one event wastes money; under-provisioning risks the event itself. <b>The cost of an hour of idle servers is almost always less than the cost of the outage</b> for a high-stakes moment."},
+
+  // ---------- OPS ----------
+  {cat:"ops", core:true, title:"Observability", one:"Whether you can understand what the system is doing — and why — from the outside, without guessing.",
+   why:"When something's wrong at 2am, observability is the difference between a five-minute fix and a two-hour mystery. You can't debug, optimize, or even confirm a feature works in production if you can't see inside it. \u201CIt seems fine\u201D is not a measurement.",
+   good:"The three pillars in place: logs (what happened), metrics (how much/how often), and traces (the path a request took). Crucially, you can answer new questions you didn't anticipate, not just watch predefined charts.",
+   ask:["When this breaks in production, how will we actually know what happened?","Can we trace a single user's request end-to-end?","What key metrics will this feature emit from day one?","If a user reports a bug we can't reproduce, what data do we have?"],
+   prd:["<span class='tag'>NFR · Observability</span>","Emit metrics: request rate, error rate, p95 latency.","Structured logs with <span class='req'>request_id</span> for tracing.","Dashboard live before launch."],
+   trade:"Instrumentation is real work that produces nothing the user sees, so it's easy to defer — and painful to retrofit. <b>Build it in with the feature</b>; observability added after an incident is observability you didn't have during it."},
+
+  {cat:"ops", core:true, title:"Alerts", one:"Automated signals that tell a human something needs attention — ideally before users notice.",
+   why:"Monitoring without alerting means you find out about problems from angry users. But over-alerting is just as dangerous: a team drowning in noisy pages stops trusting any of them, and the real one gets ignored. Alert fatigue is a leading cause of missed incidents.",
+   good:"Alerts fire on user-impacting symptoms (error rate up, latency past SLO) rather than every internal twitch. Each alert is actionable, has a clear owner, and links to a runbook. Quiet most of the time, trustworthy when it fires.",
+   ask:["What conditions should wake someone up vs. wait until morning?","Does each alert tell the responder what to actually do?","Are we alerting on symptoms users feel, or on noisy internal metrics?","How do we avoid alert fatigue burying the important ones?"],
+   prd:["<span class='tag'>NFR · Alerting</span>","Page on: error rate <span class='req'>&gt; 2%</span> for 5 min, or p95","latency past SLO. Each alert links a runbook.","Tune to <span class='req'>&lt; 1</span> false page / week."],
+   trade:"Tight alerts catch more but cry wolf; loose alerts stay quiet but miss things. <b>Bias toward alerting on what the user experiences</b>, and treat every false page as a bug to fix, not noise to tolerate."},
+
+  {cat:"ops", core:true, title:"Rollouts", one:"How a change reaches users — all at once, or gradually with the ability to stop and reverse.",
+   why:"How you ship is a risk decision. Shipping to 100% at once means a bad change hits everyone before you can react. Gradual rollouts turn a potential outage into a contained, reversible experiment — and let you tie a release to real impact data.",
+   good:"Changes go out behind feature flags and/or in stages (1% \u2192 10% \u2192 50% \u2192 100%), with health watched at each step and an instant rollback (kill switch) that doesn't require a redeploy. Releasing is decoupled from deploying.",
+   ask:["Can we turn this on for a small percentage first?","If it's bad, how fast can we turn it off — seconds, or a redeploy?","What metric tells us a stage is healthy enough to widen?","Is the rollout reversible without losing user data?"],
+   prd:["<span class='tag'>NFR · Rollout</span>","Ship behind flag <span class='req'>new_checkout</span>.","Stages: 1% \u2192 10% \u2192 50% \u2192 100%, gated on error","rate &amp; conversion. Kill switch &lt; 30s."],
+   trade:"Flags and staged rollouts add coordination and leave flag debt to clean up. <b>Worth it for anything risky or hard to reverse</b>; overkill for a copy change. Match the ceremony to the blast radius."},
+
+  {cat:"ops", title:"Incident Response & On-Call", one:"The human process for detecting, responding to, and learning from things going wrong in production.",
+   why:"Outages are inevitable; chaos during them is optional. Without a clear process, incidents take longer, burn people out, and repeat because nothing was learned. As a PM, you'll often be the one fielding stakeholder questions while engineers fix it — knowing the process keeps you useful, not in the way.",
+   good:"A known on-call rotation, a clear incident commander role, runbooks for common failures, and blameless postmortems that produce real follow-up actions. The same incident doesn't happen twice.",
+   ask:["Who's on call for this, and do they have the runbook to fix it?","What's our process when something goes wrong — who decides what?","Do we run blameless postmortems, and do the action items get done?","How do we keep on-call sustainable so people don't burn out?"],
+   prd:["<span class='tag'>NFR · Operability</span>","Runbook for top 3 failure modes before launch.","Owning team in on-call rotation. Postmortem","required for any user-facing incident."],
+   trade:"Process can curdle into bureaucracy. <b>Keep it light enough that people actually follow it under pressure</b> — a one-page runbook used beats a wiki nobody opens."},
+
+  // ---------- QUALITY ----------
+  {cat:"quality", core:true, title:"Test Coverage", one:"How much of the system's behavior is verified automatically — and, more importantly, which behavior.",
+   why:"Tests are what let a team change code quickly without fear. Low coverage means every change is a gamble and velocity quietly grinds to a halt as people get cautious. But the percentage is a vanity metric on its own — 90% coverage of trivial code while the payment path is untested is worse than it looks.",
+   good:"The critical and risky paths are well tested at the right level (fast unit tests for logic, fewer integration/end-to-end tests for whole flows). Tests run automatically on every change and are trusted enough that a green build means \u201Csafe to ship.\u201D",
+   ask:["Are the riskiest, highest-impact paths covered — not just the easy ones?","Do tests run automatically before code merges?","Can the team change this confidently, or is it scary to touch?","Are tests reliable, or flaky enough that people ignore failures?"],
+   prd:["<span class='tag'>NFR · Testing</span>","Critical paths (auth, payment) covered by","automated tests. CI green required to merge.","No untested code on the donation flow."],
+   trade:"Tests cost time to write and maintain, and chasing a coverage number rewards the wrong thing. <b>Aim coverage at risk and change-frequency, not at a percentage</b> — test what would hurt most if it broke."},
+
+  {cat:"quality", core:true, title:"Simplicity", one:"Solving the problem with the least complexity that works — so the system stays understandable and changeable.",
+   why:"Complexity is the tax you pay on every future change. An over-engineered solution feels productive but slows every subsequent feature, onboarding, and bug fix. As a PM, scope creep and \u201Cwhile we're in here\u201D additions are where accidental complexity is born — you have real leverage here.",
+   good:"The solution matches the problem's actual size. New team members can understand it. There's no speculative machinery built for requirements that may never come. Boring, obvious code that does exactly what's needed.",
+   ask:["Is this the simplest thing that solves the real problem?","Are we building for a requirement we actually have, or one we imagine?","Could a new engineer understand this in a week?","What complexity is this adding that we'll pay for on every future change?"],
+   prd:["<span class='tag'>NFR · Simplicity</span>","Scope: solve <span class='req'>today's</span> need, not a hypothetical","platform. Defer generalization until a second","real use case exists."],
+   trade:"Simple-now can mean rework later if real needs were foreseeable. <b>The skill is telling speculative flexibility from genuine known requirements</b> — build for what you know, leave clean seams for what you don't."},
+
+  {cat:"quality", title:"Maintainability & Technical Debt", one:"How easy the system is to change safely over time — and the accumulated cost of past shortcuts.",
+   why:"Most of a system's life is spent being modified, not written. Tech debt isn't inherently bad — sometimes a shortcut is the right call to hit a date — but unmanaged, invisible debt compounds until simple features take weeks. PMs who pretend debt doesn't exist end up baffled by slowing velocity.",
+   good:"Debt is tracked and deliberate: taken on knowingly, with a plan to pay it down, and weighed against features in planning rather than hidden. The codebase stays changeable; \u201Cthis should be a small change\u201D is usually true.",
+   ask:["Is this a deliberate shortcut we'll revisit, or debt we're hiding from ourselves?","What's the interest — how much is this slowing us down each sprint?","Should we budget time to pay down debt before it blocks the roadmap?","Why is this 'simple' change estimated so high?"],
+   prd:["<span class='tag'>NFR · Maintainability</span>","Shortcut logged as tracked debt with payoff plan.","Reserve <span class='req'>~15%</span> of capacity per quarter for","debt paydown on the donation service."],
+   trade:"Paying debt down isn't visible to users, so it competes with features. <b>Frame it as velocity insurance, not cleanup</b> — the question is when the interest payments exceed a feature you care about."},
+
+  {cat:"quality", title:"Documentation", one:"Whether the knowledge to operate, integrate with, or change the system exists outside people's heads.",
+   why:"Undocumented systems create single points of human failure and slow everyone who isn't the original author. For anything other teams or external developers touch — APIs especially — missing docs turn into a steady drip of support questions and integration mistakes.",
+   good:"The right docs for the audience: API references that are accurate and current, runbooks for operators, and a short \u201Cwhy\u201D for non-obvious decisions. Docs live close to the code and stay true because they're maintained, not heroic one-time efforts.",
+   ask:["Who needs to understand this besides the person building it?","If this is an API others use, are the docs accurate and current?","What happens to this knowledge if the author leaves?","Is there a runbook for whoever operates this at 2am?"],
+   prd:["<span class='tag'>NFR · Documentation</span>","Public API: reference docs + examples at launch.","Internal: runbook for ops. Decision record for","the auth approach."],
+   trade:"Docs go stale and maintaining them is ongoing work. <b>Document what's stable, external-facing, or non-obvious</b>; don't narrate code that changes weekly — there, clarity in the code itself beats prose about it."},
+
+  // ---------- SECURITY ----------
+  {cat:"security", title:"Security", one:"Protecting the system and its data from misuse, attack, and unauthorized access.",
+   why:"A breach can be existential — lost trust, legal exposure, real harm to users. Security can't be bolted on at the end; choices made early (how auth works, where secrets live, what's exposed) determine the attack surface. PMs set risk appetite even when they don't write the defenses.",
+   good:"Authentication and authorization are clearly designed (who can do what), sensitive data is encrypted in transit and at rest, inputs are validated, secrets aren't in code, and the team has thought about how someone would abuse this — not just how they'd use it.",
+   ask:["Who should be able to access this, and how do we enforce that?","Is sensitive data encrypted in transit and at rest?","How would someone abuse this feature, and what stops them?","Has anything new here expanded our attack surface?"],
+   prd:["<span class='tag'>NFR · Security</span>","Role-based access: only <span class='req'>org admins</span> see donor PII.","All PII encrypted at rest + TLS in transit.","Security review before launch."],
+   trade:"Security adds friction — for users and developers — and absolute security is impossible. <b>Match controls to the sensitivity of what's protected</b>; a public blog and a payment system don't need the same locks."},
+
+  {cat:"security", title:"Privacy & Data Protection", one:"Collecting, using, and retaining personal data lawfully, minimally, and in line with what users expect.",
+   why:"Beyond legal regimes like GDPR and CCPA, privacy is a trust contract. Collecting data you don't need is a liability, not an asset — it's risk you store. PMs usually own the decision of what to collect and why, which makes this squarely a product responsibility.",
+   good:"Data minimization (collect only what's needed for a stated purpose), clear retention and deletion, user rights honored (access, delete), and consent that's real rather than buried. Privacy considered at design time, not patched after a complaint.",
+   ask:["What personal data does this collect, and do we actually need all of it?","How long do we keep it, and when/how is it deleted?","Can a user see and delete their data if they ask?","Are there legal requirements (GDPR, CCPA) that apply here?"],
+   prd:["<span class='tag'>NFR · Privacy</span>","Collect only <span class='req'>email + amount</span> for receipts.","Retention: 7 yrs (tax), then auto-delete.","Honor deletion requests within 30 days."],
+   trade:"More data can mean better features and personalization, but each field is a liability. <b>Default to collecting less</b> — you can ask for more later, but you can't un-leak what you stored."},
+
+  {cat:"security", title:"Compliance & Auditability", one:"Meeting external rules (PCI, SOC 2, HIPAA…) and being able to prove you did.",
+   why:"For regulated domains, compliance isn't optional and isn't only about features — it's about evidence. \u201CWe do it right\u201D doesn't count if you can't show an auditor. Discovering a compliance requirement late can block a launch entirely, so it belongs in early scoping.",
+   good:"Applicable standards identified up front, requirements translated into concrete controls, and audit trails that record who did what when. Compliance is designed in, with evidence captured as a byproduct of normal operation.",
+   ask:["What regulations or standards apply to this (PCI, SOC 2, HIPAA, etc.)?","Can we prove compliance with an audit trail, not just claim it?","Does this change our compliance scope in a way legal should review?","Are we storing card data ourselves, or can we avoid that scope entirely?"],
+   prd:["<span class='tag'>NFR · Compliance</span>","Payments via PCI-compliant processor; <span class='req'>no raw</span>","<span class='req'>card data</span> on our servers. Audit log of all","admin actions, retained per policy."],
+   trade:"Compliance work is heavy and rarely user-visible. <b>The cheapest compliance is often scope you avoid</b> — e.g. never touching card numbers — so design to stay out of the strictest regimes where you can."},
+
+  // ---------- DATA ----------
+  {cat:"data", title:"Data Integrity & Consistency", one:"Whether the data is correct, and whether different parts of the system agree on it.",
+   why:"Corrupted or inconsistent data erodes trust faster than downtime — a wrong balance or a double-charged donor is worse than a brief outage. In distributed systems, different services can temporarily disagree, and whether that's acceptable is a product call, not just an engineering detail.",
+   good:"Invariants are protected (a balance can't go negative; a payment is recorded exactly once), and the consistency model is a deliberate choice — strong where it must be (money), eventually-consistent where a short lag is fine (a like count).",
+   ask:["What must always be true about this data, no matter what?","Can this operation happen twice and cause a double charge or duplicate?","Is it OK for different screens to briefly show different values here?","How do we detect and fix data that's gone wrong?"],
+   prd:["<span class='tag'>NFR · Integrity</span>","Donations recorded <span class='req'>exactly once</span> (idempotent).","Strong consistency on balances; eventual OK for","activity feed. Reconciliation job nightly."],
+   trade:"Strong consistency everywhere is simpler to reason about but limits scalability and speed. <b>Reserve the strict guarantees for data where being wrong is unacceptable</b>, and relax them where a brief lag is invisible."},
+
+  {cat:"data", title:"Data Quality & Retention", one:"Whether the data is accurate and usable over time — and how long you keep it before it's clutter or liability.",
+   why:"Decisions, reports, and ML are only as good as the data underneath. Quietly bad data (missing fields, wrong formats, duplicates) produces confident-looking wrong answers. Meanwhile keeping everything forever raises cost and risk; keeping too little loses history you needed.",
+   good:"Validation at the point of entry, monitoring for drift and anomalies, and an explicit retention policy that matches business and legal need. Someone owns each important dataset's quality.",
+   ask:["How do we know this data is accurate and complete?","What's our retention policy — what gets kept, for how long, then deleted?","Who owns the quality of this dataset?","Will downstream reports or models silently break if this data is wrong?"],
+   prd:["<span class='tag'>NFR · Data Quality</span>","Validate required fields on ingest; reject","malformed records to a dead-letter queue.","Retain event data <span class='req'>13 months</span>, then aggregate."],
+   trade:"Strict validation can reject real-but-messy data; loose validation lets garbage in. <b>Decide per field whether to reject, clean, or flag</b> — and remember that retained data is both an asset and a stored liability."},
+
+  // ---------- EXPERIENCE ----------
+  {cat:"experience", title:"Accessibility", one:"Whether people with disabilities can use the product — by keyboard, screen reader, low vision, and more.",
+   why:"Accessibility is a sizable share of users, frequently a legal requirement, and a quality marker that benefits everyone (captions help in noisy rooms; keyboard nav helps power users). Retrofitting it is far more expensive than building it in, and it's almost always a product/design decision before it's an engineering one.",
+   good:"Meets a recognized standard (e.g. WCAG 2.1 AA): works with keyboard alone, screen-reader friendly, sufficient color contrast, proper labels and focus order. Tested with real assistive tech, not just an automated scan.",
+   ask:["Can someone complete this flow using only a keyboard?","Does it work with a screen reader, and is the order sensible?","Is color contrast sufficient, and do we rely on color alone for meaning?","What accessibility standard are we committing to?"],
+   prd:["<span class='tag'>NFR · Accessibility</span>","Donation flow meets <span class='req'>WCAG 2.1 AA</span>.","Full keyboard operability; labeled form fields;","contrast \u2265 4.5:1. Screen-reader tested."],
+   trade:"Doing it well takes design and test effort. <b>It's far cheaper built-in than retrofitted</b>, and the baseline (keyboard, contrast, labels) is low-cost — the question is usually rigor, not whether to bother."},
+
+  {cat:"experience", title:"Internationalization & Localization", one:"Whether the product can adapt to other languages, currencies, formats, and cultural expectations.",
+   why:"Hard-coding English strings, US date formats, or dollar signs creates a wall that's expensive to tear down later. If global reach is even plausibly on the roadmap, the cheap move is to not paint yourself into a single-locale corner now.",
+   good:"Text is externalized (not baked into code), layouts tolerate longer translated strings, dates/numbers/currencies format per locale, and right-to-left languages are considered if relevant. \u201CInternationalization-ready\u201D even before any translation exists.",
+   ask:["Is international expansion plausible, even later?","Are user-facing strings externalized or hard-coded?","Do dates, numbers, and currencies adapt to locale?","Will the layout survive German (long) or Arabic (right-to-left)?"],
+   prd:["<span class='tag'>NFR · i18n</span>","All UI strings externalized to resource files.","Currency &amp; date format by locale. Layout tested","with <span class='req'>+40%</span> string length."],
+   trade:"Full localization is real ongoing cost; building i18n-ready is cheap insurance. <b>Separate the two</b> — make it possible now, translate when the market is real."},
+
+  {cat:"experience", title:"Compatibility & Responsiveness", one:"Whether the product works across the devices, browsers, and screen sizes your users actually have.",
+   why:"\u201CWorks on my machine\u201D is not coverage. Your real users span old phones, varied browsers, slow networks, and small screens. Deciding what you support — and what you explicitly don't — is a product decision that should be made on data, not by accident.",
+   good:"An explicit support matrix driven by real usage analytics, responsive layouts that work from phone to desktop, and graceful behavior on older or constrained environments. Tested on representative real devices, not just a desktop browser.",
+   ask:["What devices, browsers, and screen sizes do our users actually use?","What are we explicitly choosing to support — and not support?","Does this work on a mid-range phone on a slow connection?","Are we testing on real devices or just resizing a desktop window?"],
+   prd:["<span class='tag'>NFR · Compatibility</span>","Support: last 2 versions of major browsers, iOS","&amp; Android. Responsive <span class='req'>320px\u20131440px</span>.","Usable on 3G. Per usage analytics."],
+   trade:"Supporting everything is enormous test surface; supporting too little excludes real users. <b>Let analytics draw the line</b> — support what your users use, and sunset the long tail deliberately, not silently."},
+
+  // ---------- COST ----------
+  {cat:"cost", title:"Cost & Resource Efficiency", one:"What the system costs to run, and whether that cost scales sensibly with the value it delivers.",
+   why:"Cloud bills can balloon quietly until someone asks why. An architecture that's cheap at small scale can become uneconomic at large scale, turning a successful feature into a margin problem. PMs increasingly own the unit economics, so \u201Cwhat does this cost to run\u201D is a product question.",
+   good:"Cost is understood per meaningful unit (per user, per transaction, per request), monitored, and scales reasonably with value. Obvious waste is caught, and there's awareness of how cost behaves as usage grows.",
+   ask:["What does this cost to run, per user or per transaction?","Does cost scale linearly with usage, or worse?","Are we paying for idle capacity we could shed?","Is there a feature whose infra cost quietly exceeds its value?"],
+   prd:["<span class='tag'>NFR · Cost</span>","Track infra cost <span class='req'>per donation processed</span>.","Alert if unit cost rises &gt; 20% MoM.","Right-size idle capacity off-peak."],
+   trade:"Aggressive cost optimization can hurt reliability or speed, and engineering time spent optimizing isn't free either. <b>Optimize where spend is large or growing fast</b>; don't spend a week saving pennies."},
+];
+
+// ---------- gauges in hero ----------
+const GAUGES = [
+  {k:"Availability", v:"99.9%", pct:88, c:"var(--ok)"},
+  {k:"Latency p95", v:"<400ms", pct:72, c:"var(--accent)"},
+  {k:"Error budget", v:"43% left", pct:43, c:"var(--warn)"},
+  {k:"Rollout", v:"10% \u2192 50%", pct:50, c:"#7A4FD0"},
+];
+document.getElementById('gaugeStrip').innerHTML = GAUGES.map(g=>`
+  <div class="gauge">
+    <div class="k">${g.k}</div>
+    <div class="v">${g.v}</div>
+    <div class="bar"><i style="width:${g.pct}%;background:${g.c}"></i></div>
+  </div>`).join('');
+
+// ---------- state ----------
+let activeCat = "all";
+let query = "";
+let selected = 0;
+
+// filter pills
+const filtersEl = document.getElementById('filters');
+const pillData = [["all","All"]].concat(Object.entries(CATS).map(([k,v])=>[k, v.label.split(" & ")[0]]));
+filtersEl.innerHTML = pillData.map(([k,l])=>
+  `<button class="pill" data-cat="${k}" aria-pressed="${k==='all'}">${l}</button>`).join('');
+filtersEl.querySelectorAll('.pill').forEach(p=>{
+  p.addEventListener('click',()=>{
+    activeCat = p.dataset.cat;
+    filtersEl.querySelectorAll('.pill').forEach(x=>x.setAttribute('aria-pressed', x.dataset.cat===activeCat));
+    render();
+  });
+});
+
+document.getElementById('search').addEventListener('input', e=>{
+  query = e.target.value.toLowerCase().trim();
+  render();
+});
+
+function matches(t){
+  if(activeCat!=="all" && t.cat!==activeCat) return false;
+  if(!query) return true;
+  const hay = (t.title+" "+t.one+" "+t.why+" "+CATS[t.cat].label).toLowerCase();
+  return hay.includes(query);
+}
+
+function render(){
+  const visible = TOPICS.map((t,i)=>({t,i})).filter(({t})=>matches(t));
+  document.getElementById('count').textContent = `${visible.length} / ${TOPICS.length} shown`;
+
+  // rail grouped by category
+  const rail = document.getElementById('rail');
+  if(visible.length===0){
+    rail.innerHTML = `<div class="empty"><div class="mono">no matches</div><p>Try a different term or clear the filter.</p></div>`;
+    document.getElementById('panel').innerHTML = `<div class="empty"><div class="mono">no requirement selected</div></div>`;
+    return;
+  }
+  // ensure selection is visible
+  if(!visible.some(v=>v.i===selected)) selected = visible[0].i;
+
+  let html = "";
+  Object.entries(CATS).forEach(([ck,cv])=>{
+    const items = visible.filter(({t})=>t.cat===ck);
+    if(items.length===0) return;
+    html += `<div class="cat-group"><div class="cat-head"><span class="dot" style="background:${cv.color}"></span>${cv.label}</div>`;
+    items.forEach(({t,i})=>{
+      html += `<button class="nav-item ${i===selected?'active':''}" data-i="${i}">
+        <span class="idx">${String(i+1).padStart(2,'0')}</span>
+        <span>${t.title}</span>
+        ${t.core?'<span class="core">core</span>':''}
+      </button>`;
+    });
+    html += `</div>`;
+  });
+  rail.innerHTML = html;
+  rail.querySelectorAll('.nav-item').forEach(b=>{
+    b.addEventListener('click',()=>{ selected = +b.dataset.i; render(); });
+  });
+
+  renderPanel(TOPICS[selected]);
+}
+
+function renderPanel(t){
+  const cv = CATS[t.cat];
+  const askHtml = t.ask.map(q=>`<li>${q}</li>`).join('');
+  document.getElementById('panel').innerHTML = `
+    <div class="panel-top">
+      ${t.core?'<span class="core-badge">Core topic</span>':''}
+      <span class="panel-cat" style="color:${cv.color}"><span class="dot" style="background:${cv.color}"></span>${cv.label}</span>
+      <h2>${t.title}</h2>
+      <p class="oneliner">${t.one}</p>
+    </div>
+    <div class="panel-body">
+      <div class="block why">
+        <div class="block-label"><svg class="gi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Why it matters</div>
+        <p>${t.why}</p>
+      </div>
+      <div class="block good">
+        <div class="block-label"><svg class="gi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>What good looks like</div>
+        <p>${t.good}</p>
+      </div>
+      <div class="block">
+        <div class="block-label"><svg class="gi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg>Questions to ask engineering</div>
+        <ul class="ask-list">${askHtml}</ul>
+      </div>
+      <div class="block">
+        <div class="block-label"><svg class="gi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>How to write it in a PRD</div>
+        <div class="prd-box">${t.prd.map(l=>l).join('<br>')}</div>
+      </div>
+      <div class="block">
+        <div class="block-label"><svg class="gi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 7l9-4 9 4M5 9v8a2 2 0 0 0 1 1.7M19 9v8a2 2 0 0 1-1 1.7"/></svg>The tradeoff to watch</div>
+        <div class="tradeoff">${t.trade}</div>
+      </div>
+    </div>`;
+}
+
+// ---------- checklist ----------
+const CHECK = [
+  ["Availability target","Have we named an SLO and an error budget?"],
+  ["Latency budget","p95/p99 targets stated for key actions?"],
+  ["Load & capacity","Tested against the largest plausible spike?"],
+  ["Failure behavior","Defined what happens when dependencies fail?"],
+  ["Observability","Will we be able to see what's happening in prod?"],
+  ["Alerting","Actionable alerts on user-impacting symptoms?"],
+  ["Rollout plan","Can we ship gradually and roll back fast?"],
+  ["Incident readiness","On-call owner and runbook in place?"],
+  ["Test coverage","Critical paths covered, CI gating merges?"],
+  ["Security","Access, encryption, abuse cases considered?"],
+  ["Privacy","Collecting only needed data, retention defined?"],
+  ["Compliance","Identified any regulations that apply?"],
+  ["Data integrity","Invariants protected, idempotency handled?"],
+  ["Accessibility","Committed to a standard (e.g. WCAG AA)?"],
+  ["Cost","Know the cost per unit and how it scales?"],
+];
+const done = new Set();
+const checkGrid = document.getElementById('checkGrid');
+checkGrid.innerHTML = CHECK.map((c,i)=>`
+  <div class="check-item" data-i="${i}" role="checkbox" aria-checked="false" tabindex="0">
+    <span class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg></span>
+    <span class="ct"><b>${c[0]}</b><span>${c[1]}</span></span>
+  </div>`).join('');
+function toggle(el){
+  const i = +el.dataset.i;
+  if(done.has(i)){done.delete(i); el.classList.remove('done'); el.setAttribute('aria-checked','false');}
+  else{done.add(i); el.classList.add('done'); el.setAttribute('aria-checked','true');}
+  const pct = Math.round(done.size/CHECK.length*100);
+  document.getElementById('progressBar').style.width = pct+"%";
+  document.getElementById('progressPct').textContent = `${done.size} / ${CHECK.length} addressed`;
+}
+checkGrid.querySelectorAll('.check-item').forEach(el=>{
+  el.addEventListener('click',()=>toggle(el));
+  el.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){e.preventDefault();toggle(el);} });
+});
+document.getElementById('progressPct').textContent = `0 / ${CHECK.length} addressed`;
+
+render();
+</script>
+</body>
+</html>
